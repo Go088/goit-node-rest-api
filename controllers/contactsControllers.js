@@ -18,11 +18,11 @@ export const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await contactsService.getContactById(id);
-    if (!result) throw error;
+    if (!result) throw HttpError(404);
 
     res.status(200).json(result);
   } catch (error) {
-    next(HttpError(404));
+    next(error);
   }
 };
 
@@ -30,11 +30,11 @@ export const deleteContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     const deletedContact = await contactsService.removeContact(id);
-    if (!deletedContact) throw error;
+    if (!deletedContact) throw HttpError(404);
 
     res.status(200).json(deletedContact);
   } catch (error) {
-    next(HttpError(404));
+    next(error);
   }
 };
 
@@ -42,14 +42,14 @@ export const createContact = async (req, res, next) => {
   try {
     const { error, value } = createContactSchema.validate(req.body);
     if (error) {
-      return res.status(400).send(error.message);
+      throw HttpError(400, error.message);
     }
     const { name, email, phone } = value;
     const newContact = await contactsService.addContact(name, email, phone);
 
     res.status(201).json(newContact);
   } catch (error) {
-    next({ error });
+    next(error);
   }
 };
 
@@ -57,7 +57,7 @@ export const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     const selectedContact = await contactsService.getContactById(id);
-    if (!selectedContact) throw error;
+    if (!selectedContact) throw HttpError(404);
 
     if (Object.keys(req.body).length === 0) {
       return res.status(400).send("Body must have at least one field");
@@ -65,7 +65,7 @@ export const updateContact = async (req, res, next) => {
 
     const { error, value } = updateContactSchema.validate(req.body);
     if (error) {
-      return res.status(400).send(error.message);
+      throw HttpError(400, error.message);
     }
 
     const newContact = {
@@ -77,6 +77,6 @@ export const updateContact = async (req, res, next) => {
     const contact = await contactsService.updateContact(id, newContact);
     res.status(200).json(contact);
   } catch (error) {
-    next(HttpError(404));
+    next(error);
   }
 };
