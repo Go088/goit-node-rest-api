@@ -1,6 +1,24 @@
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import mongoose from "mongoose";
+import { error, log } from "node:console";
+
+const DB_URI = `mongodb+srv://Arthur:XLDkII1EYunkbcBa@cluster0.89yytgw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
+async function run() {
+  try {
+    await mongoose.connect(DB_URI);
+    await mongoose.connection.db.admin().command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+  } finally {
+    await mongoose.disconnect();
+  }
+}
+
+run().catch((error) => console.log(error));
 
 const contactsPath = path.resolve("db", "contacts.json");
 
