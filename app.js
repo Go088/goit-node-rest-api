@@ -1,4 +1,6 @@
+import "dotenv/config";
 import express from "express";
+import "./db/db.js";
 import morgan from "morgan";
 import cors from "cors";
 
