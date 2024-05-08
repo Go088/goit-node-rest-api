@@ -1,29 +1,42 @@
 import express from "express";
-import {
-  getAllContacts,
-  getOneContact,
-  deleteContact,
-  createContact,
-  updateContact,
-} from "../controllers/contactsControllers.js";
-
+import isValidId from "../helpers/isValidId.js";
+import validateBody from "../helpers/validateBody.js";
+import ContactController from "../controllers/contactsControllers.js";
 import {
   createContactSchema,
   updateContactSchema,
-} from "../schemas/contactsSchemas.js";
-
-import validateBody from "../helpers/validateBody.js";
+  updateFavoriteSchema,
+} from "../models/contact.js";
 
 const contactsRouter = express.Router();
+const jsonParser = express.json();
 
-contactsRouter.get("/", getAllContacts);
+contactsRouter.get("/", ContactController.getAllContacts);
 
-contactsRouter.get("/:id", getOneContact);
+contactsRouter.get("/:id", isValidId, ContactController.getOneContact);
 
-contactsRouter.delete("/:id", deleteContact);
+contactsRouter.delete("/:id", isValidId, ContactController.deleteContact);
 
-contactsRouter.post("/", validateBody(createContactSchema), createContact);
+contactsRouter.post(
+  "/",
+  jsonParser,
+  validateBody(createContactSchema),
+  ContactController.createContact
+);
 
-contactsRouter.put("/:id", validateBody(updateContactSchema), updateContact);
+contactsRouter.put(
+  "/:id",
+  isValidId,
+  jsonParser,
+  validateBody(updateContactSchema),
+  ContactController.updateContact
+);
+
+contactsRouter.patch(
+  "/:id/favorite",
+  isValidId,
+  validateBody(updateFavoriteSchema),
+  ContactController.updateStatusContact
+);
 
 export default contactsRouter;
