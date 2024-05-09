@@ -9,7 +9,6 @@ import {
 } from "../models/contact.js";
 
 const contactsRouter = express.Router();
-const jsonParser = express.json();
 
 contactsRouter.get("/", ContactController.getAllContacts);
 
@@ -19,7 +18,6 @@ contactsRouter.delete("/:id", isValidId, ContactController.deleteContact);
 
 contactsRouter.post(
   "/",
-  jsonParser,
   validateBody(createContactSchema),
   ContactController.createContact
 );
@@ -27,7 +25,6 @@ contactsRouter.post(
 contactsRouter.put(
   "/:id",
   isValidId,
-  jsonParser,
   validateBody(updateContactSchema),
   ContactController.updateContact
 );
