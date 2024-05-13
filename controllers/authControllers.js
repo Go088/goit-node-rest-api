@@ -24,9 +24,14 @@ async function login(req, res, next) {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    if (user !== null) throw HttpError(409, "Email in use");
+    if (user === null) throw HttpError(401, "Email or password is wrong");
 
-    res.send("Login");
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (isMatch === false) {
+      throw HttpError(401, "Email or password is wrong");
+    }
+
+    res.send({ token: "Token" });
   } catch (error) {
     next(error);
   }

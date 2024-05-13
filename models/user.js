@@ -21,10 +21,20 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    // owner: {
+    //   type: Schema.Types.ObjectId,
+    //   ref: "user",
+    // },
   },
   {
     versionKey: false,
     timestamps: true,
   }
 );
+
+export const authUserSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
+
 export default mongoose.model("User", userSchema);
