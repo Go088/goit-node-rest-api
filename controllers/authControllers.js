@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import HttpError from "../helpers/HttpError.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -31,7 +32,16 @@ async function login(req, res, next) {
       throw HttpError(401, "Email or password is wrong");
     }
 
-    res.send({ token: "Token" });
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "23h" }
+    );
+
+    res.send({
+      token,
+      user: { email: user.email, subscription: user.subscription },
+    });
   } catch (error) {
     next(error);
   }
