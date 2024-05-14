@@ -38,6 +38,8 @@ async function login(req, res, next) {
       { expiresIn: "23h" }
     );
 
+    await User.findByIdAndUpdate(user._id, { token });
+
     res.send({
       token,
       user: { email: user.email, subscription: user.subscription },
@@ -47,7 +49,30 @@ async function login(req, res, next) {
   }
 }
 
+async function logout(req, res, next) {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { token: null });
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getCurrentUser(req, res, next) {
+  const { id } = req.user;
+  try {
+    const result = await User.findById(id);
+    const { email, subscription } = result;
+
+    res.status(200).json({ email, subscription });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   register,
   login,
+  logout,
+  getCurrentUser,
 };
