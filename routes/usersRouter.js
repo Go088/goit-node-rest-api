@@ -12,7 +12,7 @@ usersRouter.post(
   UserController.register
 );
 usersRouter.post("/login", validateBody(authUserSchema), UserController.login);
-usersRouter.get("/logout", authMiddleware, UserController.logout);
+usersRouter.post("/logout", authMiddleware, UserController.logout);
 usersRouter.get("/current", authMiddleware, UserController.getCurrentUser);
 
 export default usersRouter;
