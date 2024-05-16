@@ -21,6 +21,7 @@ usersRouter.patch(
   validateBody(updateSubscriptionSchema),
   UserController.updateSubscription
 );
+usersRouter.get("/avatars", authMiddleware, UserController.getAvatar);
 usersRouter.patch(
   "/avatars",
   authMiddleware,

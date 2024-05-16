@@ -1,7 +1,10 @@
+import * as fs from "node:fs/promises";
+import path from "node:path";
 import User from "../models/user.js";
 import HttpError from "../helpers/HttpError.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -10,8 +13,16 @@ async function register(req, res, next) {
     if (user !== null) throw HttpError(409, "Email in use");
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const avatar = gravatar.url(email);
 
-    const result = await User.create({ email, password: passwordHash });
+    const result = await User.create({
+      email,
+      password: passwordHash,
+      avatarURL: avatar,
+    });
+
+    console.log(result);
+    console.log(avatar);
 
     res.status(201).json({
       user: { email: result.email, subscription: result.subscription },
@@ -31,7 +42,6 @@ async function login(req, res, next) {
     if (isMatch === false) {
       throw HttpError(401, "Email or password is wrong");
     }
-
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
@@ -83,7 +93,30 @@ async function updateSubscription(req, res, next) {
 
 async function uploadAvatar(req, res, next) {
   try {
-    res.send("Upload avatar");
+    await fs.rename(
+      req.file.path,
+      path.resolve("public/avatars", req.file.filename)
+    );
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: req.file.filename },
+      { new: true }
+    );
+
+    res.send(user);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getAvatar(req, res, next) {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (user.avatarURL === null) {
+      return res.status(404).send({ message: "Avatar not found" });
+    }
+    res.sendFile(path.resolve("public/avatars", user.avatarURL));
   } catch (error) {
     next(error);
   }
@@ -96,4 +129,5 @@ export default {
   getCurrentUser,
   updateSubscription,
   uploadAvatar,
+  getAvatar,
 };
