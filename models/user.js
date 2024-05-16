@@ -33,4 +33,8 @@ export const authUserSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+export const updateSubscriptionSchema = Joi.object({
+  subscription: Joi.string().valid("starter", "pro", "business").required(),
+});
+
 export default mongoose.model("User", userSchema);

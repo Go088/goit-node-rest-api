@@ -69,10 +69,21 @@ async function getCurrentUser(req, res, next) {
     next(error);
   }
 }
-
+async function updateSubscription(req, res, next) {
+  const { id } = req.user;
+  try {
+    const result = await User.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
 export default {
   register,
   login,
   logout,
   getCurrentUser,
+  updateSubscription,
 };
