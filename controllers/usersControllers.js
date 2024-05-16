@@ -80,10 +80,20 @@ async function updateSubscription(req, res, next) {
     next(error);
   }
 }
+
+async function uploadAvatar(req, res, next) {
+  try {
+    res.send("Upload avatar");
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   register,
   login,
   logout,
   getCurrentUser,
   updateSubscription,
+  uploadAvatar,
 };
