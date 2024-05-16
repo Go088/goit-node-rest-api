@@ -3,11 +3,24 @@ import HttpError from "../helpers/HttpError.js";
 
 async function getAllContacts(req, res, next) {
   try {
-    const contacts = await Contact.find({ owner: req.user.id }).select(
-      "-createdAt -updatedAt"
-    );
+    const { page = 1, limit = 10, favorite } = req.query;
+    const skip = (page - 1) * limit;
+    let basicParams = { owner: req.user.id };
+    if (favorite) {
+      basicParams.favorite = favorite;
+    }
 
-    res.status(200).json(contacts);
+    const totalContacts = await Contact.countDocuments(basicParams);
+    const contacts = await Contact.find(basicParams).limit(limit).skip(skip);
+
+    const response = {
+      totalPages: Math.ceil(totalContacts / limit),
+      currentPage: page,
+      totalContacts: totalContacts,
+      contacts: contacts,
+    };
+
+    res.status(200).json(response);
   } catch (error) {
     next({ error });
   }
