@@ -21,9 +21,6 @@ async function register(req, res, next) {
       avatarURL: avatar,
     });
 
-    console.log(result);
-    console.log(avatar);
-
     res.status(201).json({
       user: { email: result.email, subscription: result.subscription },
     });
@@ -97,13 +94,14 @@ async function uploadAvatar(req, res, next) {
       req.file.path,
       path.resolve("public/avatars", req.file.filename)
     );
+    const avatarURL = `http://localhost:3000/avatars/${req.file.filename}`;
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { avatarURL: req.file.filename },
+      { avatarURL: avatarURL },
       { new: true }
     );
 
-    res.send(user);
+    res.status(200).json(user.avatarURL);
   } catch (error) {
     next(error);
   }
@@ -116,7 +114,7 @@ async function getAvatar(req, res, next) {
     if (user.avatarURL === null) {
       return res.status(404).send({ message: "Avatar not found" });
     }
-    res.sendFile(path.resolve("public/avatars", user.avatarURL));
+    res.status(200).json(path.resolve("public/avatars", user.avatarURL));
   } catch (error) {
     next(error);
   }
