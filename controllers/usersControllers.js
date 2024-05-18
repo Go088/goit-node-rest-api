@@ -5,6 +5,7 @@ import HttpError from "../helpers/HttpError.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import Jimp from "jimp";
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -90,11 +91,17 @@ async function updateSubscription(req, res, next) {
 
 async function uploadAvatar(req, res, next) {
   try {
-    await fs.rename(
-      req.file.path,
-      path.resolve("public/avatars", req.file.filename)
-    );
-    const avatarURL = `http://localhost:3000/avatars/${req.file.filename}`;
+    const inputPath = req.file.path;
+    const filename = req.file.filename;
+    const newPath = path.resolve("public/avatars", filename);
+
+    const image = await Jimp.read(inputPath);
+    await image.resize(250, Jimp.AUTO).writeAsync(inputPath);
+
+    await fs.rename(inputPath, newPath);
+
+    const avatarURL = `http://localhost:3000/avatars/${filename}`;
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { avatarURL: avatarURL },
