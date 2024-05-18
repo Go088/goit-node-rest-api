@@ -108,7 +108,7 @@ async function uploadAvatar(req, res, next) {
       { new: true }
     );
 
-    res.status(200).json(user.avatarURL);
+    res.status(200).json({ avatarURL: avatarURL });
   } catch (error) {
     next(error);
   }
