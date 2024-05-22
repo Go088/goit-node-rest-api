@@ -2,6 +2,8 @@ import * as fs from "node:fs/promises";
 import path from "node:path";
 import User from "../models/user.js";
 import HttpError from "../helpers/HttpError.js";
+import mail from "../helpers/mail.js";
+import crypto from "node:crypto";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
@@ -14,12 +16,22 @@ async function register(req, res, next) {
     if (user !== null) throw HttpError(409, "Email in use");
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const verifyToken = crypto.randomUUID();
     const avatar = gravatar.url(email);
 
     const result = await User.create({
       email,
       password: passwordHash,
       avatarURL: avatar,
+      verifyToken,
+    });
+
+    mail.sendMail({
+      to: email,
+      from: "tapkharov@gmail.com",
+      subject: "Verify your email",
+      html: `To confirm your email please click on the <a href="http://localhost:3000/users/verify/${verifyToken}">link </a>`,
+      text: `To confirm your email please open the link http://localhost:3000/users/verify/${verifyToken}`,
     });
 
     res.status(201).json({
@@ -40,6 +52,10 @@ async function login(req, res, next) {
     if (isMatch === false) {
       throw HttpError(401, "Email or password is wrong");
     }
+
+    if (user.verify === false)
+      return res.status(401).send({ message: "Please verify your email" });
+
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
@@ -127,6 +143,23 @@ async function getAvatar(req, res, next) {
   }
 }
 
+async function verify(req, res, next) {
+  const { verificationToken } = req.params;
+  try {
+    const user = await User.findOne({ verifyToken: verificationToken });
+
+    if (user === null) throw HttpError(404, "User not found");
+
+    await User.findByIdAndUpdate(user._id, { verify: true, verifyToken: null });
+
+    res.status(200).json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   register,
   login,
@@ -135,4 +168,5 @@ export default {
   updateSubscription,
   uploadAvatar,
   getAvatar,
+  verify,
 };

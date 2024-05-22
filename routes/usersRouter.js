@@ -28,5 +28,6 @@ usersRouter.patch(
   uploadMiddleware.single("avatar"),
   UserController.uploadAvatar
 );
+usersRouter.get("/verify/:verificationToken", UserController.verify);
 
 export default usersRouter;
