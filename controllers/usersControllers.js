@@ -3,8 +3,8 @@ import path from "node:path";
 import User from "../models/user.js";
 import HttpError from "../helpers/HttpError.js";
 import mail from "../helpers/mail.js";
+import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import Jimp from "jimp";
@@ -15,7 +15,7 @@ async function register(req, res, next) {
     const user = await User.findOne({ email });
     if (user !== null) throw HttpError(409, "Email in use");
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = bcrypt.hashSync(password, 10);
     const verifyToken = crypto.randomUUID();
     const avatar = gravatar.url(email);
 
@@ -148,7 +148,7 @@ async function verify(req, res, next) {
   try {
     const user = await User.findOne({ verifyToken: verificationToken });
 
-    if (user === null) throw HttpError(400);
+    if (user === null) throw HttpError(404);
 
     await User.findByIdAndUpdate(user._id, { verify: true, verifyToken: null });
 
