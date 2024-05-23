@@ -26,7 +26,7 @@ async function register(req, res, next) {
       verifyToken,
     });
 
-    mail.sendMail({
+    await mail.sendMail({
       to: email,
       from: "tapkharov@gmail.com",
       subject: "Verify your email",
@@ -34,8 +34,8 @@ async function register(req, res, next) {
       text: `To confirm your email please open the link http://localhost:3000/users/verify/${verifyToken}`,
     });
 
-    res.status(201).json({
-      user: { email: result.email, subscription: result.subscription },
+    res.status(200).json({
+      message: "Verification email send",
     });
   } catch (error) {
     next(error);
@@ -160,6 +160,30 @@ async function verify(req, res, next) {
   }
 }
 
+async function resendVerifyEmail(req, res, next) {
+  const { email } = req.email;
+  try {
+    const user = User.findOne({ email });
+    if (user === null) throw HttpError(404, "User not found");
+    if (user.verify)
+      throw HttpError(400, "Verification has already been passed");
+
+    await mail.sendMail({
+      to: email,
+      from: "tapkharov@gmail.com",
+      subject: "Verify your email",
+      html: `To confirm your email please click on the <a href="http://localhost:3000/users/verify/${user.verifyToken}">link </a>`,
+      text: `To confirm your email please open the link http://localhost:3000/users/verify/${user.verifyToken}`,
+    });
+
+    res.status(200).json({
+      message: "Verification email sent",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   register,
   login,
@@ -169,4 +193,5 @@ export default {
   uploadAvatar,
   getAvatar,
   verify,
+  resendVerifyEmail,
 };
