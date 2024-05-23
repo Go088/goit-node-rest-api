@@ -148,7 +148,7 @@ async function verify(req, res, next) {
   try {
     const user = await User.findOne({ verifyToken: verificationToken });
 
-    if (user === null) throw HttpError(404, "User not found");
+    if (user === null) throw HttpError(400);
 
     await User.findByIdAndUpdate(user._id, { verify: true, verifyToken: null });
 
@@ -161,9 +161,10 @@ async function verify(req, res, next) {
 }
 
 async function resendVerifyEmail(req, res, next) {
-  const { email } = req.email;
+  const { email } = req.body;
   try {
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
+    console.log(user.verify);
     if (user === null) throw HttpError(404, "User not found");
     if (user.verify)
       throw HttpError(400, "Verification has already been passed");
