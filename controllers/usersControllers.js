@@ -164,7 +164,6 @@ async function resendVerifyEmail(req, res, next) {
   const { email } = req.body;
   try {
     const user = await User.findOne({ email });
-    console.log(user.verify);
     if (user === null) throw HttpError(404, "User not found");
     if (user.verify)
       throw HttpError(400, "Verification has already been passed");
