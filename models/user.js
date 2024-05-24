@@ -25,6 +25,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verifyToken: {
+      type: String,
+      default: null,
+      required: [true, "Verify token is required"],
+    },
   },
   {
     versionKey: false,
@@ -35,6 +44,10 @@ const userSchema = new mongoose.Schema(
 export const authUserSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
+});
+
+export const emailSchema = Joi.object({
+  email: Joi.string().email().required(),
 });
 
 export const updateSubscriptionSchema = Joi.object({
